@@ -29,9 +29,9 @@ type Dictionary struct {
 }
 
 type TokenJson struct {
-	Text      string
-	Frequency string
-	Pos       string
+	Text      string `json:"text"`
+	Frequency string `json:"frequency"`
+	Pos       string `json:"pos"`
 }
 
 // NewDict new dictionary
