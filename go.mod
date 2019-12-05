@@ -1,7 +1,7 @@
 module github.com/Devister/gse
 
 require (
-	github.com/go-ego/cedar v0.0.0-20191026170511-cf63283d1a1d
+	github.com/go-ego/cedar v0.0.0-20191129121850-43a3778f11e4
 	github.com/vcaesar/tt v0.0.0-20191103173835-6896a351024b
 )
 

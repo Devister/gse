@@ -28,6 +28,12 @@ type Dictionary struct {
 	totalFrequency int64        // 词典中所有分词的频率之和
 }
 
+type TokenJson struct {
+	Text      string
+	Frequency string
+	Pos       string
+}
+
 // NewDict new dictionary
 func NewDict() *Dictionary {
 	return &Dictionary{trie: cedar.New()}

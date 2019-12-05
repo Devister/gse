@@ -16,6 +16,7 @@ package gse
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -135,6 +136,10 @@ func getCurrentFilePath() string {
 // Read read the dict flie
 func (seg *Segmenter) Read(file string) error {
 	log.Printf("Load the gse dictionary: \"%s\" ", file)
+	isJson := false
+	if strings.Contains(file, ".json") {
+		isJson = true
+	}
 	dictFile, err := os.Open(file)
 	if err != nil {
 		log.Printf("Could not load dictionaries: \"%s\", %v \n", file, err)
@@ -152,21 +157,45 @@ func (seg *Segmenter) Read(file string) error {
 
 	// 逐行读入分词
 	line := 0
+	size := 0
+	tokenJson := &TokenJson{}
 	for {
 		line++
-		size, fsErr := fmt.Fscanln(reader, &text, &freqText, &pos)
-		if fsErr != nil {
-			if fsErr == io.EOF {
-				// End of file
-				break
+		if isJson {
+			line, err := reader.ReadBytes('\n')
+			if err != nil {
+				if err == io.EOF {
+					break
+				} else {
+					log.Printf("File '%v' line \"%v\" read error: %v, skip",
+						file, line, err.Error())
+					continue
+				}
 			}
 
-			if size > 0 {
-				log.Printf("File '%v' line \"%v\" read error: %v, skip",
-					file, line, fsErr.Error())
-			} else {
-				log.Printf("File '%v' line \"%v\" is empty, read error: %v, skip",
-					file, line, fsErr.Error())
+			if err := json.Unmarshal(line, tokenJson); err != nil {
+				log.Printf("File '%v' line \"%v\" unmarshal error: %v, skip",
+					file, line, err.Error())
+				continue
+			}
+
+			text, freqText, pos = tokenJson.Text, tokenJson.Frequency, tokenJson.Pos
+			size = len(line)
+		} else {
+			size, fsErr := fmt.Fscanln(reader, &text, &freqText, &pos)
+			if fsErr != nil {
+				if fsErr == io.EOF {
+					// End of file
+					break
+				}
+
+				if size > 0 {
+					log.Printf("File '%v' line \"%v\" read error: %v, skip",
+						file, line, fsErr.Error())
+				} else {
+					log.Printf("File '%v' line \"%v\" is empty, read error: %v, skip",
+						file, line, fsErr.Error())
+				}
 			}
 		}
 
