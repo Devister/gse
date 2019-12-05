@@ -1,4 +1,4 @@
-module github.com/go-ego/gse
+module github.com/Devister/gse
 
 require (
 	github.com/go-ego/cedar v0.0.0-20191026170511-cf63283d1a1d
