@@ -161,35 +161,30 @@ func (seg *Segmenter) Read(file string) error {
 	tokenJson := &TokenJson{}
 	for {
 		line++
-		if isJson {
-			line, err := reader.ReadBytes('\n')
-			if err != nil {
-				if err == io.EOF {
-					break
-				} else {
-					log.Printf("File '%v' line \"%v\" read error: %v, skip",
-						file, line, err.Error())
-					continue
-				}
+		data, err := reader.ReadBytes('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				log.Printf("File '%v' line \"%v\" read error: %v, skip",
+					file, line, err.Error())
+				continue
 			}
-
-			if err := json.Unmarshal(line, tokenJson); err != nil {
+		}
+		size = len(data)
+		if isJson {
+			if err := json.Unmarshal(data, tokenJson); err != nil {
 				log.Printf("File '%v' line \"%v\" unmarshal error: %v, skip",
 					file, line, err.Error())
 				continue
 			}
 
 			text, freqText, pos = tokenJson.Text, tokenJson.Frequency, tokenJson.Pos
-			size = len(line)
 		} else {
-			size, fsErr := fmt.Fscanln(reader, &text, &freqText, &pos)
+			fsize, fsErr := fmt.Sscanln(string(data), &text, &freqText, &pos)
+			//fsize, fsErr := fmt.Fscanln(reader, &text, &freqText, &pos)
 			if fsErr != nil {
-				if fsErr == io.EOF {
-					// End of file
-					break
-				}
-
-				if size > 0 {
+				if fsize > 0 {
 					log.Printf("File '%v' line \"%v\" read error: %v, skip",
 						file, line, fsErr.Error())
 				} else {
@@ -197,6 +192,7 @@ func (seg *Segmenter) Read(file string) error {
 						file, line, fsErr.Error())
 				}
 			}
+			size = fsize
 		}
 
 		if size == 0 {
@@ -216,7 +212,6 @@ func (seg *Segmenter) Read(file string) error {
 		}
 
 		// 解析词频
-		var err error
 		frequency, err = strconv.Atoi(freqText)
 		if err != nil {
 			continue
